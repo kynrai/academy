@@ -1,0 +1,8 @@
+[book]
+title = "Academy for Developers"
+authors = ["Steven Lee"]
+language = "en"
+src = "src"
+
+[output.html]
+no-section-label = false
