@@ -1,0 +1,24 @@
+/*
+ * Sidebar day links: make the "Day N" prefix as prominent as the week-group
+ * titles (same weight + strong text colour), with the lesson title rendered in
+ * lighter text after it.
+ *
+ * The sidebar label holds just "Day N"; the descriptive title is carried in a
+ * data-title attribute and rendered via ::after. The full text lives in each
+ * link's aria-label, so the accessible name stays descriptive.
+ */
+a[data-title] {
+  font-weight: 600;
+}
+
+/* Match the week titles' strong colour, but leave the active page's
+   high-contrast accent styling untouched. */
+a[data-title]:not([aria-current='page']) {
+  color: var(--sl-color-white);
+}
+
+a[data-title]::after {
+  content: ' ' attr(data-title);
+  font-weight: 400;
+  opacity: 0.7;
+}

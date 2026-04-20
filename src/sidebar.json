@@ -1,0 +1,589 @@
+[
+  {
+    "label": "Introduction",
+    "link": "/introduction/"
+  },
+  {
+    "label": "Week 1: Command Line, Environments and Git",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-01/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-01/day-1/",
+        "attrs": {
+          "data-title": "Terminal Navigation and Core Commands",
+          "aria-label": "Day 1: Terminal Navigation and Core Commands"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-01/day-2/",
+        "attrs": {
+          "data-title": "The PATH and Making Your Own Commands",
+          "aria-label": "Day 2: The PATH and Making Your Own Commands"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-01/day-3/",
+        "attrs": {
+          "data-title": "Environment Variables and Environments",
+          "aria-label": "Day 3: Environment Variables and Environments"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-01/day-4/",
+        "attrs": {
+          "data-title": "Git Core Workflow",
+          "aria-label": "Day 4: Git Core Workflow"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-01/day-5/",
+        "attrs": {
+          "data-title": "Project – Git, GitHub, and GitHub Actions",
+          "aria-label": "Day 5: Project – Git, GitHub, and GitHub Actions"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-01/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 2: Language Setup, Foundations, and Web Development",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-02/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-02/day-1/",
+        "attrs": {
+          "data-title": "Installing the Language Runtimes and Building Hello World CLIs",
+          "aria-label": "Day 1: Installing the Language Runtimes and Building Hello World CLIs"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-02/day-2/",
+        "attrs": {
+          "data-title": "HTTP, Browsers, and Server-Side Rendering",
+          "aria-label": "Day 2: HTTP, Browsers, and Server-Side Rendering"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-02/day-3/",
+        "attrs": {
+          "data-title": "REST APIs in All Four Languages",
+          "aria-label": "Day 3: REST APIs in All Four Languages"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-02/day-4/",
+        "attrs": {
+          "data-title": "Server-Side Rendering – Foundations and the Bibliotheca Project",
+          "aria-label": "Day 4: Server-Side Rendering – Foundations and the Bibliotheca Project"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-02/day-5/",
+        "attrs": {
+          "data-title": "Forms, Validation, and Completing Bibliotheca",
+          "aria-label": "Day 5: Forms, Validation, and Completing Bibliotheca"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-02/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 3: Web Development, APIs, and Browser-Server Interaction",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-03/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-03/day-1/",
+        "attrs": {
+          "data-title": "HTTP, Browsers, and APIs",
+          "aria-label": "Day 1: HTTP, Browsers, and APIs"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-03/day-2/",
+        "attrs": {
+          "data-title": "How Browsers Work and Server-Side Rendering",
+          "aria-label": "Day 2: How Browsers Work and Server-Side Rendering"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-03/day-3/",
+        "attrs": {
+          "data-title": "REST APIs in All Four Languages",
+          "aria-label": "Day 3: REST APIs in All Four Languages"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-03/day-4/",
+        "attrs": {
+          "data-title": "Client-Side Rendering with JavaScript",
+          "aria-label": "Day 4: Client-Side Rendering with JavaScript"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-03/day-5/",
+        "attrs": {
+          "data-title": "Full-Stack Project – SSR and CSR in One Server",
+          "aria-label": "Day 5: Full-Stack Project – SSR and CSR in One Server"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-03/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 4: Databases",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-04/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-04/day-1/",
+        "attrs": {
+          "data-title": "Database Types and When to Use Them",
+          "aria-label": "Day 1: Database Types and When to Use Them"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-04/day-2/",
+        "attrs": {
+          "data-title": "SQLite – Relational Databases in All Four Languages",
+          "aria-label": "Day 2: SQLite – Relational Databases in All Four Languages"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-04/day-3/",
+        "attrs": {
+          "data-title": "PostgreSQL – Production Relational Databases",
+          "aria-label": "Day 3: PostgreSQL – Production Relational Databases"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-04/day-4/",
+        "attrs": {
+          "data-title": "MongoDB – Document Databases",
+          "aria-label": "Day 4: MongoDB – Document Databases"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-04/day-5/",
+        "attrs": {
+          "data-title": "Redis – Key-Value Stores and Choosing the Right Database",
+          "aria-label": "Day 5: Redis – Key-Value Stores and Choosing the Right Database"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-04/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 5: Control Flow and Functions",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-05/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-05/day-1/",
+        "attrs": {
+          "data-title": "Variables, Types, and Expressions",
+          "aria-label": "Day 1: Variables, Types, and Expressions"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-05/day-2/",
+        "attrs": {
+          "data-title": "Conditionals and Pattern Matching",
+          "aria-label": "Day 2: Conditionals and Pattern Matching"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-05/day-3/",
+        "attrs": {
+          "data-title": "Loops and Iteration",
+          "aria-label": "Day 3: Loops and Iteration"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-05/day-4/",
+        "attrs": {
+          "data-title": "Functions and Error Handling",
+          "aria-label": "Day 4: Functions and Error Handling"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-05/day-5/",
+        "attrs": {
+          "data-title": "Project – CLI Utility in All Four Languages",
+          "aria-label": "Day 5: Project – CLI Utility in All Four Languages"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-05/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 6: Data Structures and Modelling",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-06/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-06/day-1/",
+        "attrs": {
+          "data-title": "Arrays and Lists",
+          "aria-label": "Day 1: Arrays and Lists"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-06/day-2/",
+        "attrs": {
+          "data-title": "Maps and Dictionaries",
+          "aria-label": "Day 2: Maps and Dictionaries"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-06/day-3/",
+        "attrs": {
+          "data-title": "Structs, Classes, and Interfaces",
+          "aria-label": "Day 3: Structs, Classes, and Interfaces"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-06/day-4/",
+        "attrs": {
+          "data-title": "Generics and Type Safety",
+          "aria-label": "Day 4: Generics and Type Safety"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-06/day-5/",
+        "attrs": {
+          "data-title": "Project – Typed Inventory System",
+          "aria-label": "Day 5: Project – Typed Inventory System"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-06/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 7: I/O, Network, and Data Processing",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-07/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-07/day-1/",
+        "attrs": {
+          "data-title": "File I/O and JSON",
+          "aria-label": "Day 1: File I/O and JSON"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-07/day-2/",
+        "attrs": {
+          "data-title": "HTTP Clients – Making Network Requests",
+          "aria-label": "Day 2: HTTP Clients – Making Network Requests"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-07/day-3/",
+        "attrs": {
+          "data-title": "HTTP Servers – Routing and Responses",
+          "aria-label": "Day 3: HTTP Servers – Routing and Responses"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-07/day-4/",
+        "attrs": {
+          "data-title": "Data Processing Pipelines",
+          "aria-label": "Day 4: Data Processing Pipelines"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-07/day-5/",
+        "attrs": {
+          "data-title": "Integration Project – Read, Process, Serve, Fetch",
+          "aria-label": "Day 5: Integration Project – Read, Process, Serve, Fetch"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-07/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 8: Containerization with Docker",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-08/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-08/day-1/",
+        "attrs": {
+          "data-title": "Docker Images and Dockerfiles",
+          "aria-label": "Day 1: Docker Images and Dockerfiles"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-08/day-2/",
+        "attrs": {
+          "data-title": "Multi-Stage Builds and Security",
+          "aria-label": "Day 2: Multi-Stage Builds and Security"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-08/day-3/",
+        "attrs": {
+          "data-title": "Docker Networking and Volumes",
+          "aria-label": "Day 3: Docker Networking and Volumes"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-08/day-4/",
+        "attrs": {
+          "data-title": "Docker Compose Orchestration",
+          "aria-label": "Day 4: Docker Compose Orchestration"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-08/day-5/",
+        "attrs": {
+          "data-title": "Image Optimisation and Hardening",
+          "aria-label": "Day 5: Image Optimisation and Hardening"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-08/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 9: Cloud Infrastructure Fundamentals",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-09/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-09/day-1/",
+        "attrs": {
+          "data-title": "Cloud Primitives and Terraform",
+          "aria-label": "Day 1: Cloud Primitives and Terraform"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-09/day-2/",
+        "attrs": {
+          "data-title": "Networking, IAM, and Load Balancers",
+          "aria-label": "Day 2: Networking, IAM, and Load Balancers"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-09/day-3/",
+        "attrs": {
+          "data-title": "Deploy Containers to ECS",
+          "aria-label": "Day 3: Deploy Containers to ECS"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-09/day-4/",
+        "attrs": {
+          "data-title": "Terraform Modules and State",
+          "aria-label": "Day 4: Terraform Modules and State"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-09/day-5/",
+        "attrs": {
+          "data-title": "Infrastructure Reproducibility",
+          "aria-label": "Day 5: Infrastructure Reproducibility"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-09/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 10: Agentic AI and Autonomous Systems",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-10/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-10/day-1/",
+        "attrs": {
+          "data-title": "Tool-Using Agent Basics",
+          "aria-label": "Day 1: Tool-Using Agent Basics"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-10/day-2/",
+        "attrs": {
+          "data-title": "Multi-Step Reasoning Pipeline",
+          "aria-label": "Day 2: Multi-Step Reasoning Pipeline"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-10/day-3/",
+        "attrs": {
+          "data-title": "Agent Memory and RAG",
+          "aria-label": "Day 3: Agent Memory and RAG"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-10/day-4/",
+        "attrs": {
+          "data-title": "Observability and Safety Guardrails",
+          "aria-label": "Day 4: Observability and Safety Guardrails"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-10/day-5/",
+        "attrs": {
+          "data-title": "Multi-Agent Coordination",
+          "aria-label": "Day 5: Multi-Agent Coordination"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-10/day-6/"
+      }
+    ]
+  },
+  {
+    "label": "Week 11: Capstone – Deliver a Containerised Project",
+    "items": [
+      {
+        "label": "Overview",
+        "link": "/week-11/"
+      },
+      {
+        "label": "Day 1",
+        "link": "/week-11/day-1/",
+        "attrs": {
+          "data-title": "Capstone Architecture Design",
+          "aria-label": "Day 1: Capstone Architecture Design"
+        }
+      },
+      {
+        "label": "Day 2",
+        "link": "/week-11/day-2/",
+        "attrs": {
+          "data-title": "Dockerfiles and Compose Stack",
+          "aria-label": "Day 2: Dockerfiles and Compose Stack"
+        }
+      },
+      {
+        "label": "Day 3",
+        "link": "/week-11/day-3/",
+        "attrs": {
+          "data-title": "Kubernetes Deployment",
+          "aria-label": "Day 3: Kubernetes Deployment"
+        }
+      },
+      {
+        "label": "Day 4",
+        "link": "/week-11/day-4/",
+        "attrs": {
+          "data-title": "CI/CD Pipeline",
+          "aria-label": "Day 4: CI/CD Pipeline"
+        }
+      },
+      {
+        "label": "Day 5",
+        "link": "/week-11/day-5/",
+        "attrs": {
+          "data-title": "Demo and Retrospective",
+          "aria-label": "Day 5: Demo and Retrospective"
+        }
+      },
+      {
+        "label": "Weekend Challenges",
+        "link": "/week-11/day-6/"
+      }
+    ]
+  }
+]

@@ -1,0 +1,37 @@
+---
+title: Academy for Developers
+description: An intensive 11-week course covering the full stack from terminal basics to agentic AI.
+template: splash
+hero:
+  tagline: From terminal basics to agentic AI — eleven weeks, four languages, one stack.
+---
+
+import { Card, CardGrid, LinkButton } from '@astrojs/starlight/components';
+
+{/*
+  Starlight renders hero `actions` links verbatim without applying `base`, so an
+  absolute /week-01/ drops the /academy/ prefix and a relative week-01/ breaks
+  when the page is served without a trailing slash. Build the link from
+  import.meta.env.BASE_URL (Astro substitutes /academy/ in prod, / locally) so
+  it is always an absolute, base-correct path.
+*/}
+<LinkButton href={import.meta.env.BASE_URL + 'week-01/'} icon="right-arrow" variant="primary">
+  Start Week 1
+</LinkButton>
+
+## Course outline
+
+<CardGrid>
+  <Card title="Foundations" icon="laptop">
+    Command line, environments, Git, and language runtimes (Python, Node.js, C#, Go).
+  </Card>
+  <Card title="Building" icon="puzzle">
+    Web development, REST APIs, databases, control flow, data structures, and I/O.
+  </Card>
+  <Card title="Shipping" icon="rocket">
+    Docker, cloud infrastructure, agentic AI, and a containerised capstone project.
+  </Card>
+</CardGrid>
+
+Eleven weeks, one day at a time. The `CardGrid` above is a live example of the
+kind of MDX component-based enrichment this stack unlocks.
