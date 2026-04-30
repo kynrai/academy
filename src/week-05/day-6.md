@@ -1,21 +1,27 @@
 # Weekend Challenges
 
 ## Extended Challenges
-- **Data pipeline**: Write a Python script that downloads a public dataset (e.g. [NYC taxi data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) or a CSV from [Our World in Data](https://ourworldindata.org/)), validates every row against a schema (use `pydantic` or manual checks), transforms the data, and writes a cleaned output file. Handle malformed rows gracefully with a log entry and a skip.
-- **Type annotations**: Add type hints to every function in your project. Install `mypy` and run `mypy catalogue/ --strict`. Fix every error until `mypy` exits cleanly. Notice how type errors reveal logic bugs.
-- **Publish a real CLI tool**: Package your Week 3 CLI utility as a proper Python package with an `[project.scripts]` entry point in `pyproject.toml`. Install it locally with `pip install -e .` and run it by name from any directory.
-- **Concurrency exploration**: Rewrite a slow loop (e.g. fetching data from 20 URLs sequentially) using `asyncio` with `aiohttp` or `httpx`. Compare the wall-clock time of the sequential vs async version using `time` or `timeit`.
-- **Hypothesis property-based testing**: Install `hypothesis` and write a property-based test for your statistics function: assert that `mean` is always between `min` and `max` for any non-empty list of integers. Let Hypothesis find edge cases you would not have thought of.
+
+- **Add a product list command**: Extend the CLI utility from Day 5 to accept a `list` subcommand. It reads a plain text file where each line is `name,price,category`, processes every product, and prints a formatted table with columns aligned. Handle malformed lines with a warning and skip, continuing to the next line.
+
+- **Implement in all four languages**: Take any function you wrote this week — `calculate_total`, `apply_discount`, or `validate_args` — and port it exactly to all four languages if you haven't already. Notice where the language forces you to think differently (error handling, type declarations, null checks).
+
+- **Recursion**: Write a recursive function `nested_discount(price, tiers)` where `tiers` is a list of discount rates applied sequentially. `nested_discount(100, [0.1, 0.2])` should return `100 * 0.9 * 0.8 = 72.0`. Implement it in Python and Go. Add a check that prevents infinite recursion if the list is accidentally circular.
+
+- **Higher-order functions**: Write a `compose` function that takes two functions and returns a new function that applies them in sequence. In Python: `compose(double, add_one)(5) == 11`. In TypeScript, give it a generic signature so the compiler enforces that the output type of the first function matches the input type of the second.
+
+- **Benchmark loop styles**: In Python, compare three ways to build a list of discounted prices: a `for` loop with `.append()`, a list comprehension, and `map()`. Use `timeit` with 100,000 items. In TypeScript, compare `for...of`, `.map()`, and a `for` loop. Note and explain the results.
 
 ## Recommended Reading
-- [Fluent Python (2nd ed.) by Luciano Ramalho](https://www.oreilly.com/library/view/fluent-python-2nd/9781492056348/) — Chapters 1–3 on data model and sequences.
-- [Python Concurrency with asyncio by Matthew Fowler](https://www.manning.com/books/python-concurrency-with-asyncio) — or the free [asyncio docs HOWTO](https://docs.python.org/3/library/asyncio.html).
-- [Hypermodern Python](https://cjolowicz.github.io/posts/hypermodern-python-01-setup/) — a blog series on modern Python project tooling (nox, poetry, mypy, etc.).
-- [Python Security Best Practices](https://snyk.io/blog/python-security-best-practices-cheat-sheet/) — Snyk's cheat sheet.
+
+- Python: [Functions — official tutorial](https://docs.python.org/3/tutorial/controlflow.html#defining-functions)
+- TypeScript: [Handbook — Functions](https://www.typescriptlang.org/docs/handbook/2/functions.html)
+- C#: [Methods](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/methods)
+- Go: [Effective Go — Functions](https://go.dev/doc/effective_go#functions)
 
 ## Reflection
-- How does a lock file differ from a pinned `requirements.txt`? In what scenario could even a pinned requirements file produce a different environment on two machines?
-- What is the difference between a direct dependency and a transitive dependency? Who is responsible for fixing a vulnerability in a transitive dependency?
-- Why is `mypy --strict` significantly more demanding than basic type hints? What categories of bugs did it find in your code?
-- When would you choose `asyncio` over `threading` over `multiprocessing` in Python? What is the GIL and why does it matter?
-- Review your test suite: are you testing behaviour or implementation? If you refactored the internals of a function without changing its public interface, should your tests still pass?
+
+- Python, TypeScript, and C# all use exceptions; Go uses error return values. After this week, which approach did you find easier to write? Which was easier to read? Are these the same answer?
+- What is the difference between a runtime error and a compile-time error? Give one example of each from this week's exercises.
+- In Go, what does it mean that a function can return multiple values? Can you think of a case in Python or TypeScript where you needed a tuple or an object just to return two things from a function?
+- You wrote the same program in four languages. Which required the most boilerplate? Which was the most concise? What did you lose by being concise?

@@ -1,38 +1,47 @@
-# Week 5 – Python Programming Foundations
+# Week 5 – Control Flow and Functions
+
+| Day | Topic                                          |
+| --- | ---------------------------------------------- |
+| 1   | Variables, Types, and Expressions              |
+| 2   | Conditionals and Pattern Matching              |
+| 3   | Loops and Iteration                            |
+| 4   | Functions and Error Handling                   |
+| 5   | Project – CLI Utility in All Four Languages    |
 
 ## Objectives
 
-- Build core programming fluency with Python.
-- Write clean, testable functions and modules.
-- Handle common data processing tasks.
-- Manage Python dependencies and virtual environments effectively.
+- Read and write basic programs in Python, TypeScript, C#, and Go.
+- Understand how each language expresses the same control flow concepts.
+- Write functions that accept arguments, return values, and handle errors.
+- Spot the differences between exception-based and error-value-based error handling.
 
 ## Topics
 
-- Python syntax, variables, control flow, and loops.
-- Functions, modules, and package structure.
-- Data structures (lists, dicts, sets, tuples).
-- File I/O and exception handling.
-- Intro to testing with `pytest`.
-- Virtual environments and isolation (`venv`, `pipenv`, `poetry`).
-- `pip` and PyPI: installing, pinning, and publishing packages.
-- `pyproject.toml` and dependency groups.
-- Lock files, reproducible installs, and vulnerability scanning with `pip-audit`.
+- Variable declaration and type inference across all four languages.
+- Primitive types: integers, floats, booleans, and strings.
+- String formatting and interpolation.
+- if / else if / else and switch / match expressions.
+- Pattern matching in Python (match-case), C# (switch expressions), and TypeScript.
+- for, while, and range-based loops.
+- Loop control: break and continue.
+- Functional iteration: map, filter, and reduce.
+- Function signatures, parameters, default values, and variadic arguments.
+- Return types and multiple return values.
+- Exception handling (Python, TypeScript, C#) versus error values (Go).
 
 ## Hands-On Activities
 
-- Implement command-line utility scripts.
-- Build a small data parser with validation.
-- Add unit tests for core functions.
-- Set up a project with a virtual environment, pinned dependencies, and a lock file.
-- Run a dependency audit and resolve a flagged vulnerability.
+- Declare variables in all four languages and observe type inference behaviour.
+- Write a discount calculator that applies conditional logic to a product price.
+- Loop over a list of products and filter by criteria in each language.
+- Implement a function that returns multiple values and handles an invalid input error.
+- Build a CLI price calculator as the week's culminating project.
 
 ## Deliverables
 
-- Python mini-project with tests.
-- README documenting usage and assumptions.
-- Reproducible dependency setup with `pyproject.toml` and lock file.
+- Five working programs (one per day) in each of the four languages.
+- A CLI utility that accepts arguments, validates input, applies logic, and exits cleanly.
 
 ## Assessment
 
-- Practical coding assignment and code review.
+- Code review: correctness, consistent naming, and appropriate error handling.

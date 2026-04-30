@@ -22,9 +22,9 @@ mdbook build
 | 2    | Language Setup and Foundations                           |
 | 3    | Web Development, APIs, and Browser-Server Interaction    |
 | 4    | Databases                                                |
-| 5    | Python Programming Foundations                           |
-| 6    | TypeScript Programming Foundations                       |
-| 7    | Go and Rust Fundamentals                                 |
+| 5    | Control Flow and Functions                               |
+| 6    | Data Structures and Modelling                            |
+| 7    | I/O, Network, and Data Processing                        |
 | 8    | Containerization with Docker                             |
 | 9    | Cloud Infrastructure Fundamentals                        |
 | 10   | Agentic AI and Autonomous Systems                        |
