@@ -7,10 +7,13 @@ This is an intensive course for people with a strong interest and some basic kno
 The course is divided into focused modules:
 
 - **Terminal and command-line basics**: Navigate the file system, execute commands, and use core CLI tools.
-- **Software environment setup**: Install and configure essential development tools and environments.
-- **Version control**: Use Git for branching, merging, and team collaboration workflows.
-- **APIs and web development**: Build and consume REST/GraphQL APIs and understand browser-server interaction.
-- **Programming languages**: Develop across Python, TypeScript, Go, and Rust.
-- **Databases and system design**: Model data, write SQL, and design scalable systems.
-- **Containerization and cloud**: Package and deploy applications with Docker and cloud infrastructure.
-- **Agentic AI**: Build autonomous, tool-using AI systems.
+- **Version control**: Use Git for branching, merging, and collaboration; deploy via GitHub Actions.
+- **Language setup**: Install and configure runtimes for Python, Node.js, C#, and Go.
+- **Web development and APIs**: Understand HTTP, build server-rendered pages and REST APIs, and connect JavaScript frontends.
+- **Databases**: Work with relational databases (SQLite, PostgreSQL), document stores (MongoDB), and key-value stores (Redis).
+- **Control flow and functions**: Apply variables, types, conditionals, loops, and error handling across all four languages.
+- **Data structures and modelling**: Use arrays, maps, structs, classes, interfaces, and generics.
+- **I/O, networking, and data processing**: Read and write files, make HTTP requests, build HTTP servers, and build data pipelines.
+- **Containerization and cloud**: Package applications with Docker and deploy to cloud infrastructure using Terraform.
+- **Agentic AI**: Build autonomous, tool-using AI systems with memory, observability, and multi-agent coordination.
+- **Capstone**: Deliver a production-ready containerised application with CI/CD and a Kubernetes deployment.
