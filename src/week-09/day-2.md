@@ -1,4 +1,4 @@
-# Day 2 – Networking IAM and Load Balancers
+# Day 2 – Networking, IAM, and Load Balancers
 
 ## Today's Focus
 Build out your cloud network: subnets, security groups, load balancers, and IAM roles with least privilege.
