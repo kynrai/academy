@@ -1,192 +1,244 @@
-# Day 4 – Go: Installation, Modules, and Basics
+# Day 4 – Client-Side Rendering with JavaScript
 
 ## Today's Focus
 
-Install Go, understand its module system, and write basic Go programs. Go is notable for having batteries included — the standard library is extensive enough that many tasks need no external packages at all.
+Build a browser page that fetches data from the Day 3 API and renders it using JavaScript. Understand how this differs from SSR, how to inspect it in DevTools, and what CORS is and why it matters.
 
-## What is Go?
+## What Client-Side Rendering Is
 
-Go (also called Golang) is a statically typed, compiled language created at Google. It is designed to be simple, fast, and easy to read. Key characteristics:
+In **Client-Side Rendering (CSR)**, the server sends a minimal HTML skeleton — a `<head>`, a largely empty `<body>`, and a `<script>` tag. The browser runs the script, which calls an API, receives JSON, and builds the DOM from JavaScript.
 
-- **Compiled to a single binary** — no runtime to install on the target machine
-- **Statically typed** — type errors are caught at compile time
-- **Garbage collected** — memory is managed automatically, unlike Rust or C
-- **Excellent concurrency** — goroutines and channels are built into the language
-- **Fast build times** — even large projects compile in seconds
+| | Server-Side Rendering | Client-Side Rendering |
+| - | -------------------- | -------------------- |
+| What the server sends | Complete HTML with data | Empty HTML shell + JS |
+| When content appears | Immediately on load | After JS fetches the API |
+| Works without JavaScript | Yes | No |
+| Page source shows content | Yes | No — source is the empty shell |
+| Subsequent updates | Full page reload | JS updates DOM without reload |
 
-Go is used for: web servers, CLI tools, network services, container infrastructure (Docker and Kubernetes are written in Go), and anything where low latency and easy deployment matter.
+## The DOM
 
-## Installing Go
+The **Document Object Model (DOM)** is the browser's live in-memory tree representation of the current page. JavaScript can read and modify it at any time.
 
-**macOS (Homebrew):**
+```js
+// Find elements
+const el = document.getElementById('list')
+const card = document.querySelector('.card')
+const cards = document.querySelectorAll('.card')
 
-```sh
-brew install go
-go version
+// Read and write content
+el.textContent = 'Loading...'                      // safe — no HTML injection
+el.innerHTML = '<strong>Hello</strong>'            // parses as HTML
+
+// Create and insert elements
+const div = document.createElement('div')
+div.className = 'card'
+div.textContent = 'Python'
+document.getElementById('list').appendChild(div)
 ```
 
-**Linux (apt):**
+The difference between `textContent` and `innerHTML`:
 
-```sh
-sudo apt update && sudo apt install golang
-go version
+- `textContent` sets plain text. Any HTML tags become literal characters. Use this for data from an API — it prevents accidental HTML injection.
+- `innerHTML` parses the string as HTML. Useful for templates, but never insert untrusted user input this way.
+
+## The fetch() API
+
+`fetch()` is the browser's built-in function for making HTTP requests from JavaScript. It returns a Promise that resolves to a `Response` object.
+
+```js
+const response = await fetch('http://localhost:8000/api/languages')
+if (!response.ok) throw new Error(`Server returned ${response.status}`)
+const languages = await response.json()
 ```
 
-Verify the install and check where Go installed itself:
+Key things to know:
 
-```sh
-go version
-go env GOROOT     # where the Go toolchain lives
-go env GOPATH     # your personal Go workspace (usually ~/go)
-```
+- `fetch()` only rejects on network failure. A `404` or `500` is a successful fetch — you must check `response.ok` yourself.
+- `response.json()` returns another Promise that resolves to the parsed JSON.
+- Use `await` inside an `async` function, or chain `.then()` calls.
 
-## The Module System
+## Three States Every Async UI Needs
 
-Go uses a built-in module system — there is no separate package manager like pip or npm. A **module** is a collection of Go packages with a `go.mod` file at the root.
+Any UI that fetches data must handle three states explicitly:
 
-### Creating a module
+| State | When | What to show |
+| ----- | ---- | ------------ |
+| Loading | Request sent, no response yet | "Loading…" message or spinner |
+| Error | Network failure or non-OK status | Error message with enough detail to debug |
+| Success | Response received and parsed | The actual data |
 
-```sh
-mkdir ~/projects/hello-go && cd ~/projects/hello-go
-go mod init hello-go
-```
+Failing to handle the error and loading states means users see a blank page or a frozen "Loading…" message when things go wrong.
 
-`go mod init` creates `go.mod`:
+## The CSR Page
 
-```text
-module hello-go
+Save the following as `languages-csr.html`. It calls the Day 3 API and renders the results, with a filter dropdown that sends a second request using a query parameter.
 
-go 1.22
-```
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Languages (CSR)</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 2rem auto; }
+    .card { border: 1px solid #ddd; border-radius: 6px; padding: 1rem; margin: 0.5rem 0; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+    .static { background: #dbeafe; color: #1e40af; }
+    .dynamic { background: #dcfce7; color: #166534; }
+    #status { color: #888; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Programming Languages</h1>
 
-When you add external dependencies, Go creates `go.sum` — a cryptographic hash file ensuring reproducible installs. Both files should be committed to version control.
+  <label for="filter">Filter by typing:</label>
+  <select id="filter">
+    <option value="">All</option>
+    <option value="static">Static</option>
+    <option value="dynamic">Dynamic</option>
+  </select>
 
-### Adding dependencies
+  <p id="status">Loading...</p>
+  <div id="list"></div>
 
-```sh
-go get github.com/some/package@v1.2.3
-```
+  <script>
+    const API = 'http://localhost:8000'  // change to 3000, 5000, or 8080 for other languages
 
-This updates `go.mod` and `go.sum`. Unlike npm, there is no `vendor` directory by default — Go downloads to a shared module cache (`$GOPATH/pkg/mod`).
+    async function loadLanguages(typing = '') {
+      const status = document.getElementById('status')
+      const list = document.getElementById('list')
 
-## Writing and Running Go
+      status.textContent = 'Loading...'
+      list.innerHTML = ''
 
-Create `main.go`:
+      try {
+        const url = typing ? `${API}/api/languages?typing=${typing}` : `${API}/api/languages`
+        const response = await fetch(url)
 
-```go
-package main
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}`)
+        }
 
-import "fmt"
+        const languages = await response.json()
+        status.textContent = `Showing ${languages.length} language(s)`
 
-func main() {
-    name := "Academy"
-    languages := []string{"Python", "JavaScript", "Go", "C#"}
+        languages.forEach(lang => {
+          const card = document.createElement('div')
+          card.className = 'card'
+          card.innerHTML = `
+            <h2>${lang.display}</h2>
+            <p>Paradigm: ${lang.paradigm}</p>
+            <span class="badge ${lang.typing}">${lang.typing} typing</span>
+          `
+          list.appendChild(card)
+        })
 
-    fmt.Printf("Hello from %s!\n", name)
-
-    for i, lang := range languages {
-        fmt.Printf("  %d. %s\n", i+1, lang)
+      } catch (err) {
+        status.textContent = `Error: ${err.message}. Is the API server running?`
+      }
     }
 
-    fmt.Println(greet("Go"))
-}
+    document.getElementById('filter').addEventListener('change', e => {
+      loadLanguages(e.target.value)
+    })
 
-func greet(language string) string {
-    return fmt.Sprintf("Hello from %s", language)
-}
+    loadLanguages()
+  </script>
+</body>
+</html>
 ```
 
-Run without compiling:
+Open this file directly in your browser. You will likely see an error — because the browser is loading from `file://` and making a request to `http://localhost:8000`, which is a different origin. This is CORS.
+
+## CORS
+
+**Cross-Origin Resource Sharing (CORS)** is a browser security mechanism. When JavaScript on one origin makes a request to a different origin, the browser checks whether the server allows it.
+
+The browser adds an `Origin` header to the request. If the server's response includes `Access-Control-Allow-Origin: *` (or an explicit origin), the browser allows the JavaScript to read the response. If not, the browser blocks it — even if the response arrived.
+
+CORS only applies to browser-initiated requests. `curl` does not enforce CORS.
+
+To make `languages-csr.html` work, add CORS headers to whichever Day 3 API server you are using:
+
+### Python — FastAPI
+
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+### Node.js — Express
 
 ```sh
-go run main.go
+npm install cors
 ```
 
-Compile to a binary:
-
-```sh
-go build -o hello
-./hello
+```js
+const cors = require('cors')
+app.use(cors())
 ```
 
-The resulting binary has no dependencies — it can be copied to any machine with the same OS and architecture and run immediately.
+### C# — ASP.NET Core
 
-## Go Basics
+```csharp
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
-### Types and variables
+// after var app = builder.Build():
+app.UseCors();
+```
+
+### Go — net/http
 
 ```go
-// Short declaration (type inferred)
-name := "Alice"
-count := 42
-
-// Explicit type
-var score float64 = 9.5
-var active bool = true
-
-// Multiple assignment
-x, y := 10, 20
-```
-
-### Functions
-
-```go
-// Single return value
-func add(a int, b int) int {
-    return a + b
-}
-
-// Multiple return values — idiomatic Go error handling
-func divide(a, b float64) (float64, error) {
-    if b == 0 {
-        return 0, fmt.Errorf("cannot divide by zero")
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        next(w, r)
     }
-    return a / b, nil
-}
-
-result, err := divide(10, 3)
-if err != nil {
-    fmt.Println("Error:", err)
-} else {
-    fmt.Printf("Result: %.2f\n", result)
 }
 ```
 
-### Slices and maps
+Then wrap each handler: `http.HandleFunc("/api/languages", corsMiddleware(listLanguages))`.
 
-```go
-// Slice (like a dynamic array)
-fruits := []string{"apple", "banana", "cherry"}
-fruits = append(fruits, "date")
+## Inspecting CSR in DevTools
 
-for _, fruit := range fruits {
-    fmt.Println(fruit)
-}
+Open `languages-csr.html` with your CORS-enabled API running. Open DevTools (F12).
 
-// Map
-ages := map[string]int{
-    "Alice": 30,
-    "Bob":   25,
-}
-ages["Charlie"] = 35
+**Network tab:** two requests appear — the HTML file itself and the API fetch. Click the API request. Note the request URL, the `Request Method` (`GET`), the `Access-Control-Allow-Origin` response header, and the JSON in the **Response** tab.
 
-for name, age := range ages {
-    fmt.Printf("%s is %d\n", name, age)
-}
-```
+When you use the filter dropdown, a new request appears — the same URL with `?typing=static` appended.
+
+**Elements tab:** after the page loads, expand `<div id="list">`. The `.card` divs inside it are **not in the HTML file** — they were created by JavaScript using `document.createElement` and `appendChild`.
+
+**View Page Source vs Elements tab:** use `Cmd+U` / `Ctrl+U` to view the page source. It shows the original HTML file with `<div id="list">` empty. The Elements tab shows the live DOM after JavaScript ran. This is the essential difference between SSR and CSR — in SSR the two views are the same; in CSR they diverge.
 
 ## Tasks
 
-- Install Go and verify with `go version`. Run `go env` and identify `GOROOT` and `GOPATH`.
-- Create a module with `go mod init hello-go`. Inspect the `go.mod` file.
-- Write `main.go` with the example above and run it with `go run main.go`.
-- Compile the program with `go build -o hello` and run the binary directly with `./hello`. Check the file size — note it contains everything it needs to run.
-- Write a function that accepts a slice of strings and returns a new slice containing only the strings longer than a given length. Call it from `main` and print the result.
-- Add error handling: write a function that can return an error, call it with inputs that trigger the error, and handle it with an `if err != nil` check.
+- Start one of the Day 3 API servers and add CORS support. Open `languages-csr.html` in the browser and confirm the language cards appear.
+
+- Open DevTools → **Network** tab. Identify the two requests. Click each and compare the `Content-Type` response header.
+
+- Open DevTools → **Elements** tab. Confirm the `.card` elements are present in the DOM even though they are not in the source HTML file.
+
+- Use **View Page Source** (`Cmd+U` / `Ctrl+U`). Compare the source to the Elements tab.
+
+- Use the filter dropdown to select "static". Watch a new request appear in the Network tab. Click it and confirm the URL contains `?typing=static`.
+
+- Stop the API server and reload the page. The error state should appear.
+
+- Change the `API` constant from port `8000` to `3000`, `5000`, or `8080` (whichever other server you have running with CORS enabled). Reload. The same frontend now fetches from a completely different language's server — and it works identically.
 
 ## Reading / Reference
 
-- [A Tour of Go](https://go.dev/tour/) — the official interactive tutorial, covers the full language in 90 minutes
-- [Go by Example](https://gobyexample.com/) — concise examples for every language feature
-- [Effective Go](https://go.dev/doc/effective_go) — idiomatic Go style and conventions
-- [Go module reference](https://go.dev/ref/mod)
+- MDN: [Introduction to the DOM](https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction)
+- MDN: [Using the Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+- MDN: [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)

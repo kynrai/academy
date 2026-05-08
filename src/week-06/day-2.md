@@ -233,5 +233,5 @@ for _, p := range products {
 
 - Python: [dict](https://docs.python.org/3/tutorial/datastructures.html#dictionaries) and [collections.defaultdict](https://docs.python.org/3/library/collections.html#collections.defaultdict)
 - TypeScript: [Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)
-- C#: [Dictionary<TKey,TValue>](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2)
+- C#: [`Dictionary<TKey,TValue>`](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2)
 - Go: [Maps](https://go.dev/blog/maps)

@@ -1,163 +1,277 @@
-# Day 3 – .NET and C#: SDK, CLI, and Basics
+# Day 3 – REST APIs in All Four Languages
 
 ## Today's Focus
 
-Install the .NET SDK, understand the relationship between .NET and C#, use the `dotnet` CLI to create and run projects, and write basic C# code.
+Design a small REST API and implement it in all four languages. By the end of today every server returns the same JSON responses to the same URLs — which proves that REST is a design convention, not a technology.
 
-## What is .NET?
+## What REST Means
 
-**.NET** is a free, cross-platform runtime and SDK from Microsoft. It is the environment that executes compiled C# code — similar to how the JVM runs Java or Node runs JavaScript.
+REST (Representational State Transfer) is a set of conventions for designing HTTP APIs:
 
-**C#** is the language. .NET is the platform that runs it.
+- **Resources are identified by URLs** — a language is `/api/languages/python`, not `/getLanguageByName?name=python`
+- **State is transferred as representations** — usually JSON
+- **Standard HTTP methods describe the action** — `GET` to read, `POST` to create, `PUT`/`PATCH` to update, `DELETE` to remove
+- **Stateless** — each request contains all the information the server needs
 
-.NET can build: web APIs, web apps, desktop apps, mobile apps (via MAUI), CLIs, and background services. In this course it is used for building web APIs with ASP.NET Core.
+A URL that follows REST conventions looks like a noun, not a verb:
 
-Key terms:
+| Good (noun) | Avoid (verb) |
+| ----------- | ------------ |
+| `GET /api/languages` | `GET /getLanguages` |
+| `GET /api/languages/python` | `GET /getLanguageByName?name=python` |
+| `POST /api/languages` | `POST /createLanguage` |
 
-| Term | Explanation |
-| ---- | ----------- |
-| .NET SDK | The software development kit — includes the compiler, runtime, and `dotnet` CLI. Install this for development. |
-| .NET Runtime | The runtime only — enough to run apps, not build them. Used in production containers. |
-| ASP.NET Core | The web framework included in .NET for building HTTP servers and APIs. |
-| NuGet | The .NET package registry, equivalent to PyPI or npm. |
-| `dotnet` CLI | The command-line tool for creating, building, running, and publishing .NET projects. |
+## Resource Design for Today
 
-## Installing the .NET SDK
+Three endpoints, same in every language:
 
-**macOS (Homebrew):**
+| Method | Path | Description |
+| ------ | ---- | ----------- |
+| `GET` | `/health` | Health check — returns `{"status":"ok"}` |
+| `GET` | `/api/languages` | Returns all languages. Accepts `?typing=static` or `?typing=dynamic` to filter. |
+| `GET` | `/api/languages/{name}` | Returns one language by slug. Returns `404` if not found. |
 
-```sh
-brew install --cask dotnet-sdk
-dotnet --version
+| name (slug) | display | typing | paradigm |
+| ----------- | ------- | ------ | -------- |
+| python | Python | dynamic | multi-paradigm |
+| javascript | JavaScript | dynamic | multi-paradigm |
+| csharp | C# | static | object-oriented |
+| go | Go | static | procedural |
+
+## Implementing the API in All Four Languages
+
+### Python — FastAPI on port 8000
+
+`main.py`:
+
+```python
+from fastapi import FastAPI, HTTPException, Query
+from typing import Optional
+
+app = FastAPI()
+
+languages = [
+    {"name": "python", "display": "Python", "typing": "dynamic", "paradigm": "multi-paradigm"},
+    {"name": "javascript", "display": "JavaScript", "typing": "dynamic", "paradigm": "multi-paradigm"},
+    {"name": "csharp", "display": "C#", "typing": "static", "paradigm": "object-oriented"},
+    {"name": "go", "display": "Go", "typing": "static", "paradigm": "procedural"},
+]
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.get("/api/languages")
+def list_languages(typing: Optional[str] = Query(None)):
+    if typing:
+        return [l for l in languages if l["typing"] == typing]
+    return languages
+
+@app.get("/api/languages/{name}")
+def get_language(name: str):
+    lang = next((l for l in languages if l["name"] == name.lower()), None)
+    if not lang:
+        raise HTTPException(status_code=404, detail=f"Language '{name}' not found")
+    return lang
 ```
 
-**Linux (apt):**
-
 ```sh
-wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-sudo apt update && sudo apt install dotnet-sdk-8.0
-dotnet --version
+uv run uvicorn main:app --port 8000 --reload
 ```
 
-Verify the install:
+FastAPI generates interactive docs at `http://localhost:8000/docs`.
 
-```sh
-dotnet --list-sdks      # all installed SDKs
-dotnet --list-runtimes  # all installed runtimes
+### Node.js — Express on port 3000
+
+`index.js`:
+
+```js
+const express = require('express')
+const app = express()
+
+const languages = [
+  { name: 'python', display: 'Python', typing: 'dynamic', paradigm: 'multi-paradigm' },
+  { name: 'javascript', display: 'JavaScript', typing: 'dynamic', paradigm: 'multi-paradigm' },
+  { name: 'csharp', display: 'C#', typing: 'static', paradigm: 'object-oriented' },
+  { name: 'go', display: 'Go', typing: 'static', paradigm: 'procedural' },
+]
+
+app.get('/health', (req, res) => res.json({ status: 'ok' }))
+
+app.get('/api/languages', (req, res) => {
+  const { typing } = req.query
+  const result = typing ? languages.filter(l => l.typing === typing) : languages
+  res.json(result)
+})
+
+app.get('/api/languages/:name', (req, res) => {
+  const lang = languages.find(l => l.name === req.params.name.toLowerCase())
+  if (!lang) return res.status(404).json({ error: `Language '${req.params.name}' not found` })
+  res.json(lang)
+})
+
+app.listen(3000, () => console.log('http://localhost:3000'))
 ```
 
-### Managing .NET versions
-
-Multiple SDK versions can coexist on one machine. Pin the version for a project using a `global.json` file:
-
 ```sh
-dotnet new globaljson --sdk-version 8.0.0
-cat global.json
+node index.js
 ```
 
-## The dotnet CLI
+### C# — ASP.NET Core on port 5000
 
-The `dotnet` CLI handles the full project lifecycle:
-
-| Command | Description |
-| ------- | ----------- |
-| `dotnet new <template>` | Create a new project from a template. |
-| `dotnet run` | Build and run the current project. |
-| `dotnet build` | Compile without running. |
-| `dotnet test` | Run tests. |
-| `dotnet add package <name>` | Add a NuGet package. |
-| `dotnet restore` | Restore dependencies listed in the project file. |
-| `dotnet publish` | Produce a deployable build output. |
-
-List available project templates:
-
-```sh
-dotnet new list
-```
-
-## Creating and Running a Console App
-
-```sh
-mkdir ~/projects/hello-dotnet && cd ~/projects/hello-dotnet
-dotnet new console
-```
-
-This creates:
-
-- `hello-dotnet.csproj` — the project file (dependencies, target framework, build settings)
-- `Program.cs` — the entry point
-
-The generated `Program.cs` uses top-level statements (no explicit `Main` method needed in modern C#):
+`Program.cs`:
 
 ```csharp
-Console.WriteLine("Hello, World!");
-```
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
 
-Run it:
+var languages = new[]
+{
+    new { Name = "python", Display = "Python", Typing = "dynamic", Paradigm = "multi-paradigm" },
+    new { Name = "javascript", Display = "JavaScript", Typing = "dynamic", Paradigm = "multi-paradigm" },
+    new { Name = "csharp", Display = "C#", Typing = "static", Paradigm = "object-oriented" },
+    new { Name = "go", Display = "Go", Typing = "static", Paradigm = "procedural" },
+};
+
+app.MapGet("/health", () => new { status = "ok" });
+
+app.MapGet("/api/languages", (string? typing) =>
+    typing is not null
+        ? languages.Where(l => l.Typing == typing)
+        : languages);
+
+app.MapGet("/api/languages/{name}", (string name) =>
+{
+    var lang = languages.FirstOrDefault(l => l.Name == name.ToLower());
+    return lang is not null
+        ? Results.Ok(lang)
+        : Results.NotFound(new { error = $"Language '{name}' not found" });
+});
+
+app.Run("http://localhost:5000");
+```
 
 ```sh
 dotnet run
 ```
 
-## C# Basics
+### Go — net/http on port 8080
 
-Edit `Program.cs` to explore the language:
+Go's standard library has no router with named path parameters, so the `/api/languages/` handler extracts the trailing segment manually.
 
-```csharp
-// Variables and types
-string name = "Academy";
-int year = 2024;
-bool isOpen = true;
+`main.go`:
 
-// String interpolation
-Console.WriteLine($"Hello from {name}!");
+```go
+package main
 
-// Collections
-var languages = new List<string> { "Python", "JavaScript", "Go", "C#" };
+import (
+    "encoding/json"
+    "net/http"
+    "strings"
+)
 
-// Loop
-foreach (var lang in languages)
-{
-    Console.WriteLine($"  - {lang}");
+type Language struct {
+    Name     string `json:"name"`
+    Display  string `json:"display"`
+    Typing   string `json:"typing"`
+    Paradigm string `json:"paradigm"`
 }
 
-// Function (method outside a class, using top-level statements)
-static string Greet(string language)
-{
-    return $"Hello from {language}";
+var languages = []Language{
+    {"python", "Python", "dynamic", "multi-paradigm"},
+    {"javascript", "JavaScript", "dynamic", "multi-paradigm"},
+    {"csharp", "C#", "static", "object-oriented"},
+    {"go", "Go", "static", "procedural"},
 }
 
-Console.WriteLine(Greet("C#"));
-```
+func writeJSON(w http.ResponseWriter, status int, v any) {
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(status)
+    json.NewEncoder(w).Encode(v)
+}
 
-Run it:
+func main() {
+    http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+        writeJSON(w, 200, map[string]string{"status": "ok"})
+    })
+
+    http.HandleFunc("/api/languages", func(w http.ResponseWriter, r *http.Request) {
+        typing := r.URL.Query().Get("typing")
+        result := []Language{}
+        for _, l := range languages {
+            if typing == "" || l.Typing == typing {
+                result = append(result, l)
+            }
+        }
+        writeJSON(w, 200, result)
+    })
+
+    http.HandleFunc("/api/languages/", func(w http.ResponseWriter, r *http.Request) {
+        name := strings.TrimPrefix(r.URL.Path, "/api/languages/")
+        for _, l := range languages {
+            if l.Name == strings.ToLower(name) {
+                writeJSON(w, 200, l)
+                return
+            }
+        }
+        writeJSON(w, 404, map[string]string{"error": "Language '" + name + "' not found"})
+    })
+
+    http.ListenAndServe(":8080", nil)
+}
+```
 
 ```sh
-dotnet run
+go run main.go
 ```
 
-### Project file
+## Testing with curl
 
-The `.csproj` file controls the project. Adding a NuGet package updates it automatically:
+Test all three endpoints. The commands below use port 8000 (Python) — repeat with 3000, 5000, and 8080.
 
 ```sh
-dotnet add package Newtonsoft.Json
+curl http://localhost:8000/api/languages
+curl http://localhost:8000/api/languages/python
+curl "http://localhost:8000/api/languages?typing=static"
+curl -i http://localhost:8000/api/languages/notreal   # expect 404
+curl http://localhost:8000/health
 ```
 
-This adds an entry to the `.csproj` and creates a lock file (`packages.lock.json` if enabled). Dependencies are stored in a global NuGet cache, not in a local `node_modules`-style folder — so there is nothing to gitignore for packages.
+## Status Codes
+
+| Situation | Code | Meaning |
+| --------- | ---- | ------- |
+| Successful GET | `200 OK` | Request succeeded, body contains the data. |
+| Resource not found | `404 Not Found` | The named resource does not exist. |
+
+Returning `200` with an error message inside a success body is a common mistake. When a resource does not exist, the status code must say so.
 
 ## Tasks
 
-- Install the .NET SDK and verify with `dotnet --version` and `dotnet --list-sdks`.
-- Create a console project with `dotnet new console`. Read the generated `Program.cs` and `.csproj` files.
-- Edit `Program.cs` to print a list of items using `foreach`, use string interpolation, and call a method you define. Run it with `dotnet run`.
-- Add the `Newtonsoft.Json` NuGet package with `dotnet add package`. Write code that serialises a C# object to a JSON string and prints it. Run it.
-- Run `dotnet build` and inspect the `bin/` output directory. Note that `dotnet run` combines build and run.
+- Start each server on its own port. Test every endpoint from the list above with `curl`. Note the status codes.
+
+- Compare the JSON response structure from all four languages for `GET /api/languages/go`. The shape should be identical: `name`, `display`, `typing`, `paradigm`.
+
+- Run `curl -i http://localhost:8000/api/languages/notreal` on each server. Confirm the status line reads `404`.
+
+- Create `requests.sh` with one `curl` command per endpoint, make it executable, and run it:
+
+  ```sh
+  #!/bin/sh
+  BASE_PY=http://localhost:8000
+  BASE_NODE=http://localhost:3000
+  BASE_CSHARP=http://localhost:5000
+  BASE_GO=http://localhost:8080
+
+  curl "$BASE_PY/health"
+  curl "$BASE_PY/api/languages"
+  curl "$BASE_PY/api/languages?typing=static"
+  curl "$BASE_PY/api/languages/python"
+  curl -i "$BASE_PY/api/languages/notreal"
+  ```
 
 ## Reading / Reference
 
-- [.NET documentation](https://learn.microsoft.com/en-us/dotnet/)
-- [C# language tour](https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp/)
-- [dotnet CLI reference](https://learn.microsoft.com/en-us/dotnet/core/tools/)
-- [NuGet gallery](https://www.nuget.org/)
+- [RESTful API Design](https://restfulapi.net/)
+- MDN: [HTTP request methods](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods)
+- FastAPI: [Path Parameters](https://fastapi.tiangolo.com/tutorial/path-params/) and [Query Parameters](https://fastapi.tiangolo.com/tutorial/query-params/)

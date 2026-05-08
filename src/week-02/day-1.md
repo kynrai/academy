@@ -1,19 +1,70 @@
-# Day 1 – Python: Installation, Environments, and uv
+# Day 1 – Installing the Language Runtimes and Building Hello World CLIs
 
 ## Today's Focus
 
-Install Python correctly, understand why virtual environments exist and how to use them, and get familiar with `uv` — the modern Python project manager that replaces `pip` and `venv` with a single fast tool.
+Install Python, Node.js, C#, and Go on your machine. Build a minimal `greet` CLI in each to see how each ecosystem handles the same task differently. Along the way, learn how command-line interfaces actually work — what arguments and flags are, how programs receive them, and the conventions every CLI tool follows.
 
-## Installing Python
+Work through each language in order. Verify the install before moving on.
 
-Install Python via your OS package manager so it integrates with your system PATH and receives updates automatically. Avoid downloading installers from python.org — they create isolated copies that are harder to manage.
+---
+
+## How CLIs Work
+
+Every command-line program receives its input as an array of strings. When you type:
+
+```sh
+greet --upper --language es Alice
+```
+
+the operating system runs the `greet` binary and hands it the strings `--upper`, `--language`, `es`, and `Alice` as command-line arguments. The program's job is to interpret them.
+
+### Three kinds of token
+
+| Token | Example | Meaning |
+| ----- | ------- | ------- |
+| **Positional argument** | `Alice` | A value identified by its position. The program decides what each position means (first positional = name, second = greeting, etc.). |
+| **Boolean flag** | `--upper`, `-u` | A switch that turns something on or off. Present means `true`. |
+| **Flag with value** | `--language es`, `-l es`, `--language=es` | A flag that takes a value. The value is either the next token, or after `=`. |
+
+### Conventions every CLI follows
+
+- **Long form vs short form.** `--verbose` and `-v` are equivalent. Short flags can sometimes be combined: `-rf` is shorthand for `-r -f`.
+- **`--` ends flag parsing.** Everything after a bare `--` is treated as a positional argument, even if it looks like a flag. This is why `dotnet run -- Alice` was needed in this week's C# example: `dotnet run` treats `--` as "the rest is for the program, not for me".
+- **`--help` / `-h`** prints usage and exits with status `0`. Every CLI should support this.
+- **`--version`** prints the program version.
+- **Exit codes.** `0` means success. Non-zero means failure — `1` for general errors, `2` for misuse (bad arguments). The shell uses these codes to chain commands: `cmd1 && cmd2` only runs `cmd2` if `cmd1` exited with `0`.
+- **stdout vs stderr.** Normal output goes to **stdout**. Errors and diagnostics go to **stderr**. This lets users redirect them separately:
+
+  ```sh
+  greet Alice > output.txt    # capture stdout; errors still print
+  greet Alice 2> errors.txt   # capture stderr only
+  greet Alice > out 2> err    # capture both separately
+  ```
+
+These conventions are why standard tools feel consistent. `git`, `ls`, `curl`, `docker`, `kubectl` all follow them.
+
+### Where each language exposes the arguments
+
+| Language | Argument array | First element | First positional arg | Stdlib flag parser |
+| -------- | -------------- | ------------- | -------------------- | ------------------ |
+| Python | `sys.argv` | program path | `sys.argv[1]` | `argparse` |
+| Node.js | `process.argv` | path to `node` | `process.argv[2]` (script path is `[1]`) | `node:util parseArgs` |
+| C# | `args` (entry point) | first positional arg | `args[0]` | none — use `System.CommandLine` |
+| Go | `os.Args` | program path | `os.Args[1]` | `flag` |
+
+The simple `greet` programs below read positional arguments directly. Adding flag parsing is one of the tasks at the end of the day.
+
+---
+
+## Python
+
+### Install Python
 
 **macOS (Homebrew):**
 
 ```sh
 brew install python
 python3 --version
-pip3 --version
 ```
 
 **Linux (apt):**
@@ -23,131 +74,237 @@ sudo apt update && sudo apt install python3 python3-pip
 python3 --version
 ```
 
-### Managing Multiple Python Versions
-
-Different projects sometimes require different Python versions. **pyenv** lets you install and switch between them without affecting the system Python:
-
-```sh
-brew install pyenv           # macOS
-# or: curl https://pyenv.run | bash   # Linux
-
-pyenv install 3.12.0
-pyenv install 3.11.8
-pyenv global 3.12.0          # set the default
-python3 --version
-
-pyenv local 3.11.8           # pin a specific version for the current directory
-cat .python-version          # pyenv reads this file automatically
-```
-
-## Why Python Needs Virtual Environments
-
-Python installs packages into a single global location shared by every project. This causes conflicts:
-
-- Project A requires `requests==2.28.0`
-- Project B requires `requests==2.31.0`
-- Only one version can be installed globally at a time
-
-A **virtual environment** is an isolated copy of Python and pip scoped to one directory. Packages installed inside it are invisible to everything outside.
-
-### Using venv (the built-in tool)
-
-```sh
-python3 -m venv .venv
-source .venv/bin/activate       # macOS / Linux
-# .venv\Scripts\activate        # Windows
-
-pip install requests
-pip list                        # only shows packages in this env
-
-deactivate                      # leave the environment
-```
-
-You must `source .venv/bin/activate` in every new terminal session — there is no automatic activation.
-
-### Tracking dependencies with pip
-
-```sh
-pip install requests fastapi uvicorn
-pip freeze > requirements.txt   # snapshot current packages
-pip install -r requirements.txt # restore on another machine
-```
-
-The problem with `pip freeze` is that it captures every transitive dependency at whatever version happened to be installed. There is no proper lock file, and `requirements.txt` files drift over time.
-
-## uv — A Better Alternative
-
-**uv** is a Python package and project manager written in Rust. It replaces `pip`, `venv`, and `pip-tools` with one tool that is significantly faster and more reliable.
-
-| Feature | pip + venv | uv |
-| ------- | ---------- | -- |
-| Dependency resolution speed | Slow (pure Python) | 10–100× faster (Rust) |
-| Lock file | Manual (`pip freeze`) | Automatic (`uv.lock`) |
-| Virtual environment | Manual (`python -m venv`) | Automatic, per project |
-| Python version pinning | Requires pyenv separately | Built in (`uv python pin`) |
-| Reproducible installs | Fragile | Guaranteed via lock file |
-
-### Installing uv
+Install `uv` — the project and package manager used throughout this course:
 
 ```sh
 curl -LsSf https://astral.sh/uv/install.sh | sh
-source ~/.zshrc
+source ~/.zshrc   # or ~/.bashrc on Linux
 uv --version
 ```
 
-### Starting a project with uv
+### Hello World CLI – Python
 
 ```sh
-mkdir ~/projects/hello-python && cd ~/projects/hello-python
+mkdir ~/projects/greet-python && cd ~/projects/greet-python
 uv init
 ```
 
-This creates:
-
-- `pyproject.toml` — project metadata and dependencies
-- `.python-version` — the pinned Python version
-- `hello_python.py` — a starter script
-- `uv.lock` — the lock file (generated on first `uv sync`)
-
-```sh
-uv add requests          # installs and records in pyproject.toml
-uv run python hello_python.py
-```
-
-`uv run` automatically creates and activates the virtual environment for that command. You never need to manually activate anything.
-
-## Writing and Running Python
-
-Edit `hello_python.py`:
+Replace the starter script with `greet.py`:
 
 ```python
-name = "Academy"
-languages = ["Python", "JavaScript", "Go", "C#"]
+import sys
 
-print(f"Hello from {name}!")
-print(f"This course covers: {', '.join(languages)}")
+if len(sys.argv) < 2:
+    print("Error: please provide a name.", file=sys.stderr)
+    print(f"Usage: {sys.argv[0]} <name>")
+    sys.exit(1)
 
-for i, lang in enumerate(languages, 1):
-    print(f"  {i}. {lang}")
+print(f"Hello, {sys.argv[1]}!")
 ```
-
-Run it:
 
 ```sh
-uv run python hello_python.py
+uv run python greet.py Alice
+uv run python greet.py        # error path
 ```
+
+Key files created by `uv init`: `pyproject.toml` (project metadata and dependencies), `uv.lock` (exact dependency versions). Dependencies installed with `uv add` are recorded in `pyproject.toml` and pinned in `uv.lock`.
+
+---
+
+## Node.js
+
+### Install Node.js
+
+```sh
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.zshrc
+nvm install 20
+nvm alias default 20
+node --version    # v20.x.x
+npm --version
+```
+
+### Hello World CLI – Node.js
+
+```sh
+mkdir ~/projects/greet-node && cd ~/projects/greet-node
+npm init -y
+```
+
+Create `greet.js`:
+
+```js
+const name = process.argv[2];
+
+if (!name) {
+  console.error("Error: please provide a name.");
+  console.log(`Usage: ${process.argv[1]} <name>`);
+  process.exit(1);
+}
+
+console.log(`Hello, ${name}!`);
+```
+
+```sh
+node greet.js Alice
+node greet.js         # error path
+```
+
+Key files: `package.json` (project metadata, scripts, dependencies), `package-lock.json` (created on first `npm install`, records exact resolved versions), `node_modules/` (installed packages — never commit this).
+
+---
+
+## C# and .NET
+
+### Install C# and .NET
+
+**macOS (Homebrew):**
+
+```sh
+brew install --cask dotnet-sdk
+dotnet --version
+```
+
+**Linux (apt):**
+
+```sh
+wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+sudo apt update && sudo apt install dotnet-sdk-8.0
+dotnet --version
+```
+
+### Hello World CLI – C#
+
+```sh
+mkdir ~/projects/greet-dotnet && cd ~/projects/greet-dotnet
+dotnet new console
+```
+
+Replace `Program.cs`:
+
+```csharp
+if (args.Length == 0)
+{
+    Console.Error.WriteLine("Error: please provide a name.");
+    Console.WriteLine("Usage: greet <name>");
+    Environment.Exit(1);
+}
+
+Console.WriteLine($"Hello, {args[0]}!");
+```
+
+```sh
+dotnet run -- Alice
+dotnet run              # error path
+```
+
+The `--` separator tells `dotnet run` that what follows are arguments for your program, not for `dotnet`. Key files: `.csproj` (project file — dependencies, target framework), `bin/` (compiled output). Packages are installed from NuGet with `dotnet add package <name>`.
+
+---
+
+## Go
+
+### Install Go
+
+**macOS (Homebrew):**
+
+```sh
+brew install go
+go version
+```
+
+**Linux (apt):**
+
+```sh
+sudo apt update && sudo apt install golang
+go version
+```
+
+### Hello World CLI – Go
+
+```sh
+mkdir ~/projects/greet-go && cd ~/projects/greet-go
+go mod init greet-go
+```
+
+Create `main.go`:
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    if len(os.Args) < 2 {
+        fmt.Fprintln(os.Stderr, "Error: please provide a name.")
+        fmt.Printf("Usage: %s <name>\n", os.Args[0])
+        os.Exit(1)
+    }
+
+    fmt.Printf("Hello, %s!\n", os.Args[1])
+}
+```
+
+```sh
+go run main.go Alice
+go run main.go          # error path
+
+go build -o greet
+./greet Alice           # runs as a compiled binary
+```
+
+Key files: `go.mod` (module path and dependencies), `go.sum` (cryptographic hashes of all dependencies). No separate package manager — `go get`, `go build`, and `go run` are all built into the Go toolchain. The compiled binary is self-contained: it runs on the target machine with no Go installation required.
+
+---
+
+## Comparing the Four Ecosystems
+
+|                         | Python                   | Node.js                     | C#                 | Go                  |
+| ----------------------- | ------------------------ | --------------------------- | ------------------ | ------------------- |
+| Arguments               | `sys.argv[1]`            | `process.argv[2]`           | `args[0]`          | `os.Args[1]`        |
+| Run command             | `uv run python greet.py` | `node greet.js`             | `dotnet run --`    | `go run main.go`    |
+| Dependency file         | `pyproject.toml`         | `package.json`              | `.csproj`          | `go.mod`            |
+| Package store           | per-project `.venv`      | per-project `node_modules/` | global NuGet cache | global module cache |
+| Output                  | Interpreted script       | Interpreted script          | JIT-compiled IL    | Native binary       |
+| Needs runtime on target | Yes (Python)             | Yes (Node)                  | Yes (.NET)         | No                  |
+
+---
 
 ## Tasks
 
-- Install Python 3 via Homebrew or apt and verify with `python3 --version`.
-- Install pyenv and use it to install two Python versions. Use `pyenv local` to pin one version in a test directory and confirm `python3 --version` reflects it.
-- Create a project with `python3 -m venv .venv`, activate it, install a package with `pip`, run `pip list`, then deactivate and confirm the package is gone.
-- Install `uv`. Create a new project with `uv init`, add a dependency, and run a script with `uv run`. Inspect `pyproject.toml` and `uv.lock` — note what each file contains.
-- Write a Python script that prints a message using an f-string, loops over a list, and calls a function you define. Run it with `uv run`.
+- Install all four runtimes. Verify each with its version command before moving on.
+- Build the `greet` program in each language. Confirm both the success path (`greet Alice`) and the error path (no argument) work correctly.
+- In the Go project, run `go build -o greet` and copy the binary to a different directory. Run it from there — confirm it works with no `go` installation visible to that path.
+- Open `pyproject.toml`, `package.json`, `.csproj`, and `go.mod` side by side. Note what each file records: project name, dependencies, target runtime version.
+- **Practise stdout vs stderr.** In each greet program, run:
+
+  ```sh
+  greet Alice > out.txt 2> err.txt
+  greet > out.txt 2> err.txt
+  ```
+
+  Open both files after each run and confirm: success output went to `out.txt`, error output went to `err.txt`.
+
+- **Inspect the exit code.** After running each program, check `$?` (the previous command's exit code):
+
+  ```sh
+  greet Alice && echo "success"
+  greet || echo "exit code was $?"
+  ```
+
+- **Add a `--upper` flag** to one of the four `greet` programs of your choosing. When present, the greeting should be uppercased: `greet Alice --upper` prints `HELLO, ALICE!`. Both argument orders should work: `greet --upper Alice` and `greet Alice --upper`. Use `argparse` (Python), `node:util parseArgs` (Node), `args.Contains` (C#), or `flag` (Go).
 
 ## Reading / Reference
 
 - [uv documentation](https://docs.astral.sh/uv/)
-- [pyenv README](https://github.com/pyenv/pyenv)
-- [Real Python: Python Virtual Environments primer](https://realpython.com/python-virtual-environments-a-primer/)
-- [Python packaging user guide](https://packaging.python.org/en/latest/)
+- [nvm README](https://github.com/nvm-sh/nvm)
+- [.NET SDK download page](https://dotnet.microsoft.com/en-us/download)
+- [Go installation guide](https://go.dev/doc/install)
+- Python: [argparse tutorial](https://docs.python.org/3/howto/argparse.html)
+- Node.js: [util.parseArgs](https://nodejs.org/api/util.html#utilparseargsconfig)
+- Go: [flag package](https://pkg.go.dev/flag)
+- [POSIX Utility Argument Syntax conventions](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html)

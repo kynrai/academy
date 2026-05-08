@@ -193,5 +193,5 @@ TypeScript, C#, and Go follow the same patterns: `push`/`pop` for stack, `shift`
 
 - Python: [Lists](https://docs.python.org/3/tutorial/datastructures.html)
 - TypeScript: [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
-- C#: [List<T>](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1)
+- C#: [`List<T>`](https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1)
 - Go: [Slices](https://go.dev/blog/slices-intro)

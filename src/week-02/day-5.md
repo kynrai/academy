@@ -1,233 +1,218 @@
-# Day 5 – Hello World Web Servers in All Four Languages
+# Day 5 – Full-Stack Project: SSR, REST API, and CSR in One Server
 
 ## Today's Focus
 
-Write a minimal HTTP server in Python, JavaScript, C#, and Go. Each server returns the same JSON response on `GET /`. The goal is to see that HTTP is language-agnostic — the browser and `curl` interact with all four identically — while every language takes a different approach to get there.
+Combine everything from this week into a single server that handles three different routes: a fully server-rendered HTML page, a JSON API, and a CSR shell. The goal is to see all three patterns running together and to verify that the same JSON API can be consumed by the browser directly, by `curl`, and by a JavaScript frontend.
 
-## The Target
+## The Project
 
-Every server should respond to `GET /` with:
+One server, three routes:
 
-```json
-{"message": "Hello from <language>"}
-```
+| Route | Pattern | What it returns |
+| ----- | ------- | --------------- |
+| `GET /` | SSR | A complete HTML page with a table of languages — no JS needed |
+| `GET /api/languages` and `GET /api/languages/{name}` | REST API | JSON |
+| `GET /app` | CSR shell | Minimal HTML with a `<script>` that fetches `/api/languages` |
 
-And to `GET /health` with:
+The SSR page and the CSR page show the same data — but they get it differently. The SSR page reads the `languages` list directly from server memory. The CSR page sends its own HTTP request to `/api/languages` after the browser loads it.
 
-```json
-{"status": "ok"}
-```
+This means the same JSON endpoint is used by:
 
-Test each one with:
+- The CSR frontend (browser-initiated fetch)
+- `curl` (direct API calls during development and testing)
+- Any other client — a mobile app, a script, another server
 
-```sh
-curl http://localhost:<port>/
-curl http://localhost:<port>/health
-```
+## Reference Implementation — Python (FastAPI)
 
----
+Build the full server in one language. The Python version is shown in full; the structure maps directly to Node.js, C#, and Go with the same three route types.
 
-## Python – FastAPI (port 8000)
-
-FastAPI is a modern Python web framework that uses type annotations to validate requests and auto-generate API documentation.
-
-```sh
-cd ~/projects/hello-python
-uv add fastapi uvicorn
-```
-
-Create or update `main.py`:
+`main.py`:
 
 ```python
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 
 app = FastAPI()
 
-@app.get("/")
-def hello():
-    return {"message": "Hello from Python"}
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+languages = [
+    {"name": "python", "display": "Python", "typing": "dynamic", "paradigm": "multi-paradigm"},
+    {"name": "javascript", "display": "JavaScript", "typing": "dynamic", "paradigm": "multi-paradigm"},
+    {"name": "csharp", "display": "C#", "typing": "static", "paradigm": "object-oriented"},
+    {"name": "go", "display": "Go", "typing": "static", "paradigm": "procedural"},
+]
+
+# ── SSR route ──────────────────────────────────────────────────────────────
+@app.get("/", response_class=HTMLResponse)
+def ssr_page():
+    rows = "\n".join(
+        f'  <tr><td>{l["display"]}</td><td>{l["typing"]}</td><td>{l["paradigm"]}</td></tr>'
+        for l in languages
+    )
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Languages – SSR</title>
+<style>body{{font-family:sans-serif;max-width:700px;margin:2rem auto}}
+table{{border-collapse:collapse;width:100%}}th,td{{border:1px solid #ddd;padding:8px;text-align:left}}
+th{{background:#f4f4f4}}</style>
+</head>
+<body>
+  <h1>Languages (Server-Side Rendered)</h1>
+  <p>This HTML was built by Python and sent complete. No JavaScript needed.</p>
+  <table><thead><tr><th>Language</th><th>Typing</th><th>Paradigm</th></tr></thead>
+  <tbody>{rows}</tbody></table>
+  <p><a href="/app">View the CSR version →</a></p>
+</body>
+</html>"""
+
+# ── JSON API routes ────────────────────────────────────────────────────────
+@app.get("/api/languages")
+def list_languages(typing: Optional[str] = None):
+    if typing:
+        return [l for l in languages if l["typing"] == typing]
+    return languages
+
+@app.get("/api/languages/{name}")
+def get_language(name: str):
+    lang = next((l for l in languages if l["name"] == name.lower()), None)
+    if not lang:
+        raise HTTPException(status_code=404, detail=f"Language '{name}' not found")
+    return lang
+
+# ── CSR shell route ────────────────────────────────────────────────────────
+@app.get("/app", response_class=HTMLResponse)
+def csr_shell():
+    return """<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Languages – CSR</title>
+<style>body{font-family:sans-serif;max-width:700px;margin:2rem auto}
+.card{border:1px solid #ddd;border-radius:6px;padding:1rem;margin:.5rem 0}
+#status{color:#888;font-style:italic}</style>
+</head>
+<body>
+  <h1>Languages (Client-Side Rendered)</h1>
+  <p>This shell was sent by the server. JavaScript fetches the data and builds the list.</p>
+  <p id="status">Loading...</p>
+  <div id="list"></div>
+  <p><a href="/">View the SSR version →</a></p>
+  <script>
+    fetch('/api/languages')
+      .then(r => r.json())
+      .then(languages => {
+        document.getElementById('status').textContent = languages.length + ' languages loaded'
+        document.getElementById('list').innerHTML = languages.map(l => `
+          <div class="card">
+            <h2>${l.display}</h2>
+            <p>Typing: ${l.typing} | Paradigm: ${l.paradigm}</p>
+          </div>`).join('')
+      })
+      .catch(err => {
+        document.getElementById('status').textContent = 'Error: ' + err.message
+      })
+  </script>
+</body>
+</html>"""
 ```
-
-Run:
 
 ```sh
 uv run uvicorn main:app --port 8000 --reload
 ```
 
-Open `http://localhost:8000/docs` — FastAPI generates interactive API documentation automatically from your code.
+## Testing the Three Routes
 
----
-
-## JavaScript – Express (port 3000)
-
-Express is a minimal web framework for Node.js.
+**SSR page — returns finished HTML:**
 
 ```sh
-cd ~/projects/hello-node
-npm install express
+curl http://localhost:8000/
 ```
 
-Create or update `index.js`:
+The body is a complete HTML document with a `<table>` containing all four languages. `Content-Type` is `text/html`.
 
-```js
-const express = require('express')
-const app = express()
-
-app.get('/', (req, res) => {
-  res.json({ message: 'Hello from JavaScript' })
-})
-
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok' })
-})
-
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000')
-})
-```
-
-Run:
+**JSON API — returns data:**
 
 ```sh
-node index.js
+curl http://localhost:8000/api/languages
+curl http://localhost:8000/api/languages/python
+curl http://localhost:8000/api/languages/go
 ```
 
----
-
-## C# – ASP.NET Core Minimal API (port 5000)
-
-ASP.NET Core's minimal API syntax lets you define routes concisely without controllers or classes.
+**CSR shell — returns minimal HTML:**
 
 ```sh
-cd ~/projects/hello-dotnet
-dotnet new webapi --use-minimal-apis -n hello-dotnet
-cd hello-dotnet
+curl http://localhost:8000/app
 ```
 
-Replace the generated `Program.cs`:
+The body is an HTML document with an empty `<div id="list">`. The data only appears after the browser runs the embedded script.
 
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+**In the browser:**
 
-app.MapGet("/", () => new { message = "Hello from C#" });
-app.MapGet("/health", () => new { status = "ok" });
+- Open `http://localhost:8000/` — the table renders immediately
+- Open `http://localhost:8000/app` — you briefly see "Loading…" then the cards appear
+- Click the links between the two pages
 
-app.Run("http://localhost:5000");
-```
+## Comparing the Two Pages in DevTools
 
-Run:
+Open DevTools and compare `/` and `/app` side by side.
 
-```sh
-dotnet run
-```
+**View Page Source for `/`:** the HTML source contains the full `<table>` with all four rows. The data is embedded in the document the server sent.
 
----
+**View Page Source for `/app`:** the HTML source contains `<div id="list"></div>` — empty. The data is not there yet.
 
-## Go – net/http (port 8080)
+**Elements tab for `/app`:** after the script runs, `<div id="list">` contains four `.card` divs. These were created by JavaScript after the browser made a second request to `/api/languages`.
 
-Go's standard library includes a production-capable HTTP server. No external packages are needed.
+**Network tab for `/app`:** two requests appear — the `GET /app` document request and then a `GET /api/languages` fetch. For `/`, there is only one request — the data came with the HTML.
 
-```sh
-cd ~/projects/hello-go
-```
+**Disable JavaScript and compare:** reload `/` — the table is still there. Reload `/app` — the list is empty, "Loading…" is frozen. SSR is resilient to JavaScript being unavailable; CSR depends on it entirely.
 
-Update `main.go`:
+## The Language-Agnostic Point
 
-```go
-package main
+The CSR frontend running in the browser does not know or care which language the server is written in. When the script calls `fetch('/api/languages')`, it sees HTTP — a `200 OK` response with `Content-Type: application/json` and a JSON body. The language on the other end is invisible.
 
-import (
-    "encoding/json"
-    "net/http"
-)
+To make this concrete:
 
-func jsonResponse(w http.ResponseWriter, data any) {
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(data)
-}
+- Run this Python server on port 8000
+- Run the Go server from Day 3 on port 8080 (with CORS enabled)
+- Edit the CSR shell's `<script>` to use `fetch('http://localhost:8080/api/languages')`
+- Reload `/app` — the same cards appear, sourced from Go
 
-func main() {
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        jsonResponse(w, map[string]string{"message": "Hello from Go"})
-    })
+The frontend code did not change. The contract — URL, method, response shape — is what matters.
 
-    http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-        jsonResponse(w, map[string]string{"status": "ok"})
-    })
+## Adapting to Other Languages
 
-    http.ListenAndServe(":8080", nil)
-}
-```
+The same three-route structure works in any language. The patterns are:
 
-Run:
+1. A handler that returns `Content-Type: text/html` with a complete HTML string
+2. Handlers that return `Content-Type: application/json` with serialised data
+3. A handler that returns `Content-Type: text/html` with a minimal HTML shell containing a `<script>` that calls route 2
 
-```sh
-go run main.go
-```
+In Node.js: `res.send(html)` for HTML routes and `res.json(data)` for JSON routes.
 
----
+In C#: `Results.Content(html, "text/html")` for HTML routes; return objects directly for JSON routes (ASP.NET Core serialises them automatically).
 
-## Comparing All Four
-
-With all four servers running, test them and compare the responses:
-
-```sh
-curl http://localhost:8000/          # Python
-curl http://localhost:3000/          # JavaScript
-curl http://localhost:5000/          # C#
-curl http://localhost:8080/          # Go
-
-curl -i http://localhost:8000/health # -i includes response headers
-curl -i http://localhost:3000/health
-curl -i http://localhost:5000/health
-curl -i http://localhost:8080/health
-```
-
-Open each URL in your browser and in DevTools (Network tab). Compare the `Content-Type` response header across all four — it is `application/json` in every case.
-
-### What differs
-
-| | Python | JavaScript | C# | Go |
-| - | ------ | ---------- | -- | -- |
-| Framework | FastAPI | Express | ASP.NET Core | stdlib `net/http` |
-| Port | 8000 | 3000 | 5000 | 8080 |
-| Run command | `uv run uvicorn main:app` | `node index.js` | `dotnet run` | `go run main.go` |
-| JSON serialisation | Automatic (return a dict) | `res.json()` | Automatic (anonymous object) | `encoding/json` |
-| Auto docs | Yes (`/docs`) | No | Optional (Swagger) | No |
-
-### What is identical
-
-- The HTTP protocol
-- The JSON response format
-- How `curl` and the browser interact with them
-- The status codes
-- The `Content-Type: application/json` response header
-
-The language is an implementation detail. HTTP is the contract.
+In Go: set `w.Header().Set("Content-Type", "text/html; charset=utf-8")` and write the HTML string for HTML routes; use `encoding/json` for JSON routes.
 
 ## Tasks
 
-- Get all four servers running simultaneously on their respective ports.
-- Test each with `curl` and with the browser.
-- Use `curl -i` to view response headers from each server. Note the `Content-Type`, `Server`, and any other headers that differ.
-- Add a third endpoint `GET /info` to each server that returns a JSON object with the language name and version number:
+- Build the full-stack server in Python using the reference implementation. Run it and confirm all three routes work with both `curl` and the browser.
 
-  ```json
-  {"language": "Python", "version": "3.12.0"}
-  ```
+- Visit `/` in the browser. Use **View Page Source** and confirm the language data is in the HTML source.
 
-  Hard-code the values for now.
+- Visit `/app` in the browser. Use **View Page Source** and confirm `<div id="list">` is empty in the source. Open the **Elements** tab and confirm it is populated after JS runs.
 
-- Stop one server and test its port with `curl`. Note the connection refused error — the server process is the thing answering requests.
+- Open the **Network** tab. Compare the number of requests for `/` (one) vs `/app` (two).
+
+- Disable JavaScript and visit both pages. Confirm `/` still shows the data and `/app` shows an empty list.
+
+- Edit the `languages` list on the server: add a fifth language (e.g. `{"name": "rust", "display": "Rust", "typing": "static", "paradigm": "systems"}`). Restart and reload both `/` and `/app`. Both update — because both ultimately read from the same source of truth.
+
+- **Build it again in another language.** Pick Node.js, C#, or Go and reproduce the same three routes. Confirm the same URLs return equivalent responses. The frontend code in `/app` does not need to change.
+
+- **Cross-language test:** if you have two language servers running, edit the CSR shell's fetch URL to point to the other server (with CORS enabled) and confirm the frontend still renders correctly.
 
 ## Reading / Reference
 
-- [FastAPI documentation](https://fastapi.tiangolo.com/)
-- [Express documentation](https://expressjs.com/)
-- [ASP.NET Core minimal APIs](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis)
-- [Go net/http package](https://pkg.go.dev/net/http)
+- web.dev: [Rendering on the Web](https://web.dev/articles/rendering-on-the-web) — comparison of SSR, CSR, SSG, and hybrid approaches
+- MDN: [Progressive Enhancement](https://developer.mozilla.org/en-US/docs/Glossary/Progressive_Enhancement)
